@@ -4,15 +4,30 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="stylesheet" href="style.css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
 		<title>Ahmed</title>
 	</head>
 	<body>
-		<button class="get">Get Data</button>
-		<p class="result"></p>
-        <hr>
-        <input type="text" placeholder="Name">
-        <input type="number" placeholder="Age">
-		<button class="post">Post Data</button>
+		<div class="container">
+			<div class="table-holder">
+				<table>
+					<thead></thead>
+					<tbody class="result">
+						<tr class="loading">
+							<td colspan="3">Loading...</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="controls">
+				<div class="inputs">
+					<input type="text" placeholder="Name" />
+					<input type="number" placeholder="Age" />
+				</div>
+				<button class="post">Add User</button>
+			</div>
+			<p class="error fade-out"></p>
+		</div>
 
 		<script src="main.js" type="module"></script>
 	</body>
