@@ -34,7 +34,7 @@ body {
 	position: relative;
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 20px;
 	justify-content: center;
 	align-items: center;
 	max-width: 600px;
@@ -118,6 +118,12 @@ tbody tr {
 	display: flex;
 	gap: 10px;
 	width: 100%;
+}
+
+@media (max-width: 500px) {
+    .controls .inputs {
+        flex-direction: column;
+    }
 }
 
 .controls input {
