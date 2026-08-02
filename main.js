@@ -1,6 +1,7 @@
 const apiUrl = "https://script.google.com/macros/s/AKfycbxnbc1uctasjKX2rK--JUeO0Gun5HKwbkIvT12j_zZMMfS7EwxwbslKgMc-hqw0z7ux/exec";
 const tableHead = document.querySelector("thead");
 const tableBody = document.querySelector("tbody");
+const CACHE_KEY = "usersTableCache";
 
 function showErrorMessage(errorElement, message) {
 	errorElement.textContent = message;
@@ -20,65 +21,86 @@ function showErrorMessage(errorElement, message) {
 
 const errorElement = document.querySelector("p.error");
 
+function renderTable(data) {
+	tableHead.innerHTML = "";
+	tableBody.innerHTML = "";
+
+	data.forEach((user, index) => {
+		if (index === 0) {
+			const tr = document.createElement("tr");
+
+			user.forEach((key) => {
+				const th = document.createElement("th");
+				th.textContent = key;
+				tr.appendChild(th);
+			});
+
+			tableHead.appendChild(tr);
+		} else {
+			const isEmpty = user.every((value) => value === "");
+			if (isEmpty) return;
+
+			const tr = document.createElement("tr");
+			tr.setAttribute("data-id", index + 1);
+
+			user.forEach((value) => {
+				const td = document.createElement("td");
+				td.innerHTML = `${value}`;
+				tr.appendChild(td);
+			});
+
+			const td = document.createElement("td");
+			td.classList.add("actions");
+
+			const btnsContainer = document.createElement("div");
+			btnsContainer.classList.add("btns-container");
+
+			const editButton = document.createElement("i");
+			editButton.classList.add("fa-solid", "fa-pen-to-square", "edit");
+
+			const deleteButton = document.createElement("i");
+			deleteButton.classList.add("fa-solid", "fa-trash", "delete");
+
+			const menuToggle = document.createElement("i");
+			menuToggle.classList.add("fa-solid", "fa-ellipsis-vertical", "menu-toggle");
+
+			btnsContainer.appendChild(editButton);
+			btnsContainer.appendChild(deleteButton);
+			td.appendChild(btnsContainer);
+			td.appendChild(menuToggle);
+			tr.appendChild(td);
+
+			tableBody.appendChild(tr);
+		}
+	});
+}
+
 async function getData() {
+	const cached = localStorage.getItem(CACHE_KEY);
+
+	if (cached) {
+		try {
+			renderTable(JSON.parse(cached));
+		} catch (err) {
+			console.error("cache parse error:", err);
+			localStorage.removeItem(CACHE_KEY);
+		}
+	}
+
 	try {
 		const res = await fetch(apiUrl);
-
 		const data = await res.json();
 
-		tableHead.innerHTML = "";
-		tableBody.innerHTML = "";
+		const freshDataString = JSON.stringify(data);
 
-		data.forEach((user, index) => {
-			if (index === 0) {
-				const tr = document.createElement("tr");
-
-				user.forEach((key) => {
-					const th = document.createElement("th");
-					th.textContent = key;
-					tr.appendChild(th);
-				});
-
-				tableHead.appendChild(tr);
-			} else {
-				const isEmpty = user.every((value) => value === "");
-				if (isEmpty) return;
-
-				const tr = document.createElement("tr");
-				tr.setAttribute("data-id", index + 1);
-
-				user.forEach((value) => {
-					const td = document.createElement("td");
-					td.innerHTML = `${value}`;
-					tr.appendChild(td);
-				});
-
-				const td = document.createElement("td");
-				td.classList.add("actions");
-
-				const btnsContainer = document.createElement("div");
-				btnsContainer.classList.add("btns-container");
-
-				const editButton = document.createElement("i");
-				editButton.classList.add("fa-solid", "fa-pen-to-square", "edit");
-
-				const deleteButton = document.createElement("i");
-				deleteButton.classList.add("fa-solid", "fa-trash", "delete");
-
-				const menuToggle = document.createElement("i");
-				menuToggle.classList.add("fa-solid", "fa-ellipsis-vertical", "menu-toggle");
-
-				btnsContainer.appendChild(editButton);
-				btnsContainer.appendChild(deleteButton);
-				td.appendChild(btnsContainer);
-				td.appendChild(menuToggle);
-				tr.appendChild(td);
-
-				tableBody.appendChild(tr);
-			}
-		});
+		if (freshDataString !== cached) {
+			renderTable(data);
+			localStorage.setItem(CACHE_KEY, freshDataString);
+		}
 	} catch (err) {
-		showErrorMessage(errorElement, "unable to get data");
+		if (!cached) {
+			showErrorMessage(errorElement, "unable to get data");
+		}
 		console.error("getData error:", err);
 	}
 }
